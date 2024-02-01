@@ -1,6 +1,7 @@
 # EnvironmentServiceNaming
 
-This is a page for JustSaying to add a naming convention based on environment & service name. It also has an extra method for defining point to point queues.
+This is a page for [JustSaying](https://github.com/justeattakeaway/JustSaying) v7 to add a naming convention based on environment & service name. 
+It also has an extra method for defining point to point queues.
 
 ### What it looks like
 
@@ -69,3 +70,12 @@ To use the point to point naming convention, the subscription / publisher needs 
 If individual p2p queues aren't configured as above, then it will default to:
 
 `{environment}-{service}-{messageType}`
+
+## Additional Notes
+
+There are helper extension methods for configuration which are used above:
+
+`ConfigurePointToPointPublisher`
+`ConfigurePointToPointQueue`
+
+In a similar vein exists `ConfigureTopic` which provides a similar interface for configuring subscriptions, but is not strictly needed for configuring naming conventions.
