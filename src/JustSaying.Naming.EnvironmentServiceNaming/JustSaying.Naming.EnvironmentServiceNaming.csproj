@@ -5,15 +5,15 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Authors>Mike Goodfellow</Authors>
         <Company>Audiu Ltd.</Company>
-<!--        <PackageReadmeFile>README.md</PackageReadmeFile>-->
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="JustSaying" Version="7.1.1" />
     </ItemGroup>
 
-<!--  <ItemGroup>-->
-<!--    <None Include="..\..\README.md" Pack="true" PackagePath="\"/>-->
-<!--  </ItemGroup>-->
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+  </ItemGroup>
 
 </Project>
