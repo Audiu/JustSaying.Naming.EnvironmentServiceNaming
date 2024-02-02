@@ -21,7 +21,7 @@ services:
 
   testrunner:
     build:
-      context: ..\
+      context: ../
       dockerfile: src\Dockerfile
       target: testrunner
       args:
