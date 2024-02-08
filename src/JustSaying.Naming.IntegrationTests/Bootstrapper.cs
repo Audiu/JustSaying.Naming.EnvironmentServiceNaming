@@ -92,12 +92,19 @@ public class Bootstrapper
 
         container.RegisterInstance<ILoggerFactory>(loggerFactory);
 
+        var awsConfig = new AwsConfig(null, null, "eu-west-1", "http://localhost.localstack.cloud:4566");
         var namingStrategy = new EnvironmentServiceNamingStrategy(Environment, ServiceName);
 
+        container.AddJustSayingNoOpMessageMonitor();
+
         var builder = container.AddJustSayingReturnBuilder(
-            new AwsConfig(null, null, "eu-west-1", "http://localhost.localstack.cloud:4566"),
-            namingStrategy,
-            namingStrategy,
+            awsConfig,
+            new MessagingConfig
+            {
+                Region = awsConfig.RegionEndpoint,
+                QueueNamingConvention = namingStrategy,
+                TopicNamingConvention = namingStrategy,
+            },
             builder =>
             {
                 builder.Subscriptions(
