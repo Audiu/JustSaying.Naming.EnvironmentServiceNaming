@@ -9,7 +9,7 @@ namespace JustSaying.Naming.EnvironmentServiceNaming
             this QueuePublicationBuilder<T> builder,
             string environment) where T : Message
         {
-            builder.WithName(EnvironmentServiceNamingStrategy.GetPointToPointQueueName<T>(environment));
+            builder.WithQueueName(EnvironmentServiceNamingStrategy.GetPointToPointQueueName<T>(environment));
 
             return builder;
         }

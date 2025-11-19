@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using DotNet.Testcontainers.Containers;
 using JustSaying.Extensions.DependencyInjection.SimpleInjector;
 using JustSaying.Messaging;
 using JustSaying.Messaging.MessageHandling;
@@ -12,12 +13,16 @@ using NUnit.Framework;
 using Serilog;
 using SimpleInjector;
 using SimpleInjector.Lifestyles;
+using Testcontainers.LocalStack;
 
 namespace JustSaying.Naming.IntegrationTests;
 
 [SetUpFixture]
 public class Bootstrapper
 {
+    private static LocalStackContainer _localStackContainer;
+    private static string _serviceUrl;
+
     public static ILoggerFactory LoggerFactory { get; private set; }
 
     public static Container Container { get; private set; }
@@ -45,20 +50,52 @@ public class Bootstrapper
 
         try
         {
-            Container = new Container();
-            ConfigureInjection(Container);
+            // Set dummy AWS credentials to allow Container.Verify() to succeed
+            // These won't be used because LocalStack is configured with anonymous credentials
+            var originalAccessKey = System.Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID");
+            var originalSecretKey = System.Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY");
 
-            Container.Verify();
+            try
+            {
+                System.Environment.SetEnvironmentVariable("AWS_ACCESS_KEY_ID", "test");
+                System.Environment.SetEnvironmentVariable("AWS_SECRET_ACCESS_KEY", "test");
 
-            logger.Information("Configured and verified runtime injection");
-            TestContext.Progress.WriteLine("Configured and verified runtime injection");
+                // Start LocalStack container
+                logger.Information("Starting LocalStack container...");
+                TestContext.Progress.WriteLine("Starting LocalStack container...");
 
-            // Boot listener
-            var publisher = Container.GetInstance<IMessagePublisher>();
-            await publisher.StartAsync(CancellationToken.None);
+                _localStackContainer = new LocalStackBuilder()
+                    .WithImage("localstack/localstack:latest")
+                    .Build();
 
-            var messagingBus = Container.GetInstance<IMessagingBus>();
-            await messagingBus.StartAsync(CancellationToken.None);
+                await _localStackContainer.StartAsync();
+
+                _serviceUrl = _localStackContainer.GetConnectionString();
+
+                logger.Information($"LocalStack started at: {_serviceUrl}");
+                TestContext.Progress.WriteLine($"LocalStack started at: {_serviceUrl}");
+
+                Container = new Container();
+                ConfigureInjection(Container);
+
+                Container.Verify();
+
+                logger.Information("Configured and verified runtime injection");
+                TestContext.Progress.WriteLine("Configured and verified runtime injection");
+
+                // Boot listener
+                var publisher = Container.GetInstance<IMessagePublisher>();
+                await publisher.StartAsync(CancellationToken.None);
+
+                var messagingBus = Container.GetInstance<IMessagingBus>();
+                await messagingBus.StartAsync(CancellationToken.None);
+            }
+            finally
+            {
+                // Restore original values
+                System.Environment.SetEnvironmentVariable("AWS_ACCESS_KEY_ID", originalAccessKey);
+                System.Environment.SetEnvironmentVariable("AWS_SECRET_ACCESS_KEY", originalSecretKey);
+            }
         }
         catch (Exception ex)
         {
@@ -70,10 +107,15 @@ public class Bootstrapper
     }
 
     [OneTimeTearDown]
-    public void FixtureTearDown()
+    public async Task FixtureTearDown()
     {
         Container?.Dispose();
         LoggerFactory?.Dispose();
+        
+        if (_localStackContainer != null)
+        {
+            await _localStackContainer.DisposeAsync();
+        }
     }
 
     private static void ConfigureInjection(Container container)
@@ -92,7 +134,7 @@ public class Bootstrapper
 
         container.RegisterInstance<ILoggerFactory>(loggerFactory);
 
-        var awsConfig = new AwsConfig(null, null, "eu-west-1", "http://localhost.localstack.cloud:4566");
+        var awsConfig = new AwsConfig(null, null, "eu-west-1", _serviceUrl);
         var namingStrategy = new EnvironmentServiceNamingStrategy(Environment, ServiceName);
 
         container.AddJustSayingNoOpMessageMonitor();
