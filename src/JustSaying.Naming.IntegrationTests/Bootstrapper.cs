@@ -111,7 +111,7 @@ public class Bootstrapper
     {
         Container?.Dispose();
         LoggerFactory?.Dispose();
-        
+
         if (_localStackContainer != null)
         {
             await _localStackContainer.DisposeAsync();
@@ -134,19 +134,18 @@ public class Bootstrapper
 
         container.RegisterInstance<ILoggerFactory>(loggerFactory);
 
-        var awsConfig = new AwsConfig(null, null, "eu-west-1", _serviceUrl);
         var namingStrategy = new EnvironmentServiceNamingStrategy(Environment, ServiceName);
 
         container.AddJustSayingNoOpMessageMonitor();
 
         var builder = container.AddJustSayingReturnBuilder(
-            awsConfig,
             new MessagingConfig
             {
-                Region = awsConfig.RegionEndpoint,
+                Region = System.Environment.GetEnvironmentVariable("AWS_REGION"),
                 QueueNamingConvention = namingStrategy,
                 TopicNamingConvention = namingStrategy,
             },
+            _serviceUrl,
             builder =>
             {
                 builder.Subscriptions(
