@@ -141,7 +141,7 @@ public class Bootstrapper
         var builder = container.AddJustSayingReturnBuilder(
             new MessagingConfig
             {
-                Region = System.Environment.GetEnvironmentVariable("AWS_REGION"),
+                Region = "eu-west-1",
                 QueueNamingConvention = namingStrategy,
                 TopicNamingConvention = namingStrategy,
             },
