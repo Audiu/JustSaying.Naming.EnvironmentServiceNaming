@@ -9,7 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="JustSaying" Version="7.1.1" />
+      <PackageReference Include="JustSaying" Version="8.0.0" />
     </ItemGroup>
 
   <ItemGroup>

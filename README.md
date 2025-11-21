@@ -1,7 +1,7 @@
 # EnvironmentServiceNaming
 
-This is a page for [JustSaying](https://github.com/justeattakeaway/JustSaying) v7 to add a naming convention based on environment & service name. 
-It also has an extra method for defining point to point queues.
+This is a page for [JustSaying](https://github.com/justeattakeaway/JustSaying) v8 to add a naming convention based on environment & service name. 
+It also has an extra method for defining point to point queues. Use the v7 branch for the v7 release of JustSaying.
 
 ### What it looks like
 
